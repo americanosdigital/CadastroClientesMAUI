@@ -1,0 +1,171 @@
+﻿@page "/"
+@using CadastroClientesMAUI.Resources.Models
+@using CadastroClientesMAUI.Resources.Interface
+@inject IClienteService ClienteService
+
+<h1>Clientes</h1>
+<hr />
+
+<!-- Área de Mensagem de Sucesso ou Erro -->
+@if (!string.IsNullOrEmpty(mensagem))
+{
+    <div class="alert @(mensagemSucesso ? "alert-success" : "alert-danger")">
+        @mensagem
+    </div>
+}
+
+<!-- Botão para adicionar um novo cliente -->
+<button class="btn btn-success" @onclick="ShowAddForm">Incluir Cliente</button>
+
+@if (isEditing)
+{
+    <EditForm Model="clienteParaEditar" OnValidSubmit="SaveCliente">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div>
+            <label for="name">Nome</label>
+            <InputText id="name" class="form-control" @bind-Value="clienteParaEditar.Name" />
+        </div>
+        <div>
+            <label for="lastname">Sobrenome</label>
+            <InputText id="lastname" class="form-control" @bind-Value="clienteParaEditar.Lastname" />
+        </div>
+        <div>
+            <label for="age">Idade</label>
+            <InputNumber id="age" class="form-control" @bind-Value="clienteParaEditar.Age" />
+        </div>
+        <div>
+            <label for="address">Endereço</label>
+            <InputText id="address" class="form-control" @bind-Value="clienteParaEditar.Address" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Salvar Cliente</button>
+        <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Cancelar</button>
+    </EditForm>
+}
+else
+{
+    <hr />
+    <h2>Lista de Clientes</h2>
+
+    <!-- Tabela de Clientes -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Sobrenome</th>
+                <th>Idade</th>
+                <th>Endereço</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cliente in clientes)
+            {
+                <tr>
+                    <td>@cliente.Name</td>
+                    <td>@cliente.Lastname</td>
+                    <td>@cliente.Age</td>
+                    <td>@cliente.Address</td>
+                    <td>
+                        <!-- Botão de Editar -->
+                        <button class="btn btn-warning" @onclick="() => EditCliente(cliente)">Editar</button>
+                        <!-- Botão de Deletar -->
+                        <button class="btn btn-danger" @onclick="() => DeleteCliente(cliente.Id)">Deletar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+
+@code {
+    private Cliente novoCliente = new Cliente();
+    private bool isEditing = false;
+    private Cliente clienteParaEditar = new Cliente();
+    private List<Cliente> clientes = new List<Cliente>();
+
+    private string mensagem = string.Empty;
+    private bool mensagemSucesso = true; // Controla se a mensagem é de sucesso (true) ou erro (false)
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Carrega todos os clientes ao inicializar
+        clientes = await ClienteService.GetAllClientesAsync();
+    }
+
+    private void ShowAddForm()
+    {
+        // Exibe o formulário de edição com um cliente vazio
+        clienteParaEditar = new Cliente();
+        isEditing = true;
+    }
+
+    private void EditCliente(Cliente cliente)
+    {
+        // Define o cliente a ser editado e exibe o formulário
+        clienteParaEditar = cliente;
+        isEditing = true;
+    }
+
+    private async Task SaveCliente()
+    {
+        try
+        {
+            // Salva o cliente na API
+            if (clienteParaEditar.Id == Guid.Empty)
+            {
+                // Se o cliente não tiver Id, significa que é uma inclusão
+                await ClienteService.AddClienteAsync(clienteParaEditar);
+                mensagem = "Cliente adicionado com sucesso!";
+                mensagemSucesso = true;
+            }
+            else
+            {
+                // Se já tiver Id, significa que é uma edição
+                await ClienteService.UpdateClienteAsync(clienteParaEditar);
+                mensagem = "Cliente atualizado com sucesso!";
+                mensagemSucesso = true;
+            }
+
+            // Atualiza a lista de clientes e esconde o formulário de edição
+            clientes = await ClienteService.GetAllClientesAsync();
+            isEditing = false;
+        }
+        catch (Exception)
+        {
+            // Se houver um erro, exibe mensagem de erro
+            mensagem = "Erro ao salvar o cliente. Tente novamente.";
+            mensagemSucesso = false;
+        }
+    }
+
+    private void CancelEdit()
+    {
+        // Cancela a edição e volta para a lista de clientes
+        isEditing = false;
+    }
+
+    private async Task DeleteCliente(Guid id)
+    {
+        try
+        {
+            // Deleta o cliente da API
+            await ClienteService.DeleteClienteAsync(id);
+
+            // Atualiza a lista de clientes
+            clientes = await ClienteService.GetAllClientesAsync();
+            mensagem = "Cliente deletado com sucesso!";
+            mensagemSucesso = true;
+        }
+        catch (Exception)
+        {
+            // Se houver um erro, exibe mensagem de erro
+            mensagem = "Erro ao deletar o cliente. Tente novamente.";
+            mensagemSucesso = false;
+        }
+    }
+}
