@@ -8,7 +8,7 @@ using CadastroClientesMAUI.Resources.Interface;
 using CadastroClientesMAUI.Resources.Models;
 
 
-namespace CadastroClientesMAUI.Resources.Sevices
+namespace CadastroClientesMAUI.Resources.Services
 {
     public class ClienteService : IClienteService
     {

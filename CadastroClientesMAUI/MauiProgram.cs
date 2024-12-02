@@ -1,5 +1,5 @@
 ﻿using CadastroClientesMAUI.Resources.Interface;
-using CadastroClientesMAUI.Resources.Sevices;
+using CadastroClientesMAUI.Resources.Services;
 using Microsoft.Extensions.Logging;
 
 namespace CadastroClientesMAUI
