@@ -44,6 +44,7 @@ Este é um projeto de **Cadastro de Clientes** para dispositivos móveis e deskt
     builder.Services.AddSingleton<HttpClient>();
     builder.Services.AddSingleton<IClienteService, ClienteService>();
     ```
+    ** Verifique se na pasta Resources/Services no arquivo ClienteService o link da API esta apontando para https://localhost:7023/api/Cliente do projeto parte 1 CadastroClientesAPP
 
 5. Execute o aplicativo:
     ```bash
